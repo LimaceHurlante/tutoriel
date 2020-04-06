@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>ISS API</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+    integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+    crossorigin=""></script>
+  <style>
+    #mapid {
+      height: 600px;
+    }
+
+    #titre1 {
+
+      color: cadetblue;
+    }
+
+    #Position {
+      float: none;
+      width: 240px;
+
+      background-color: cadetblue;
+    }
+
+    #canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: -1;
+    }
+  </style>
+
+
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <script type="text/javascript" src="backgroundBeaul.js">
+  </script>
+
+  <center>
+    <h1 id="titre1">Position de l'ISS en temps réel</h1>
+
+    <div id="Position">
+      <p>Latitude : <span id=lat></span> </p>
+      <p>Longitude : <span id=lon></span> </p>
+    </div>
+  </center>
+  <p></p>
+  <div id="mapid"></div>
+  <script>
+    let latlon = [];
+    let MonMArqueur;
+    var mymap;
+
+    DisplayCarte();
+
+    //Afficher la carte
+    async function DisplayCarte() {
+
+      // Préparer la carte
+      latlon = await recupeDataIss();
+      console.log(latlon);
+      mymap = L.map('mapid').setView(latlon, 6);
+      const attribution =
+        '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>';
+      const tileURL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+      const tiles = L.tileLayer(tileURL, {
+        attribution
+      });
+      //---------------Afficher la map
+      tiles.addTo(mymap);
+      //---------------Afficher un marqueur
+      AfficheLeRepere();
+
+    }
+
+    async function AfficheLeRepere() {
+      console.log("on affiche le marqueur")
+      var myIcon = L.icon({
+        iconUrl: 'iss.png',
+        iconSize: [30, 30],
+        iconAnchor: [20, 20],
+      });
+
+
+
+      MonMArqueur = await L.marker(latlon, {
+        icon: myIcon
+      }).addTo(mymap);
+
+      setInterval(MAJPosISS, 1500);
+      //MAJPosISS();
+
+      async function MAJPosISS() {
+        latlon = await recupeDataIss();
+        MonMArqueur.setLatLng(latlon);
+        mymap.panTo(latlon);
+
+      }
+
+    }
+
+    async function recupeDataIss() {
+      const api_url = "https://api.wheretheiss.at/v1/satellites/25544";
+      const file = await fetch(api_url);
+      const pos = await file.json();
+      const {
+        latitude,
+        longitude
+      } = pos;
+      document.getElementById("lat").textContent = latitude;
+      document.getElementById("lon").textContent = longitude;
+
+      return ([latitude, longitude]);
+    }
+    //marker.setLatLng([0, 0]);
+  </script>
+</body>
+
+</html>

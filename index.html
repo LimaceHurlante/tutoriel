@@ -4,17 +4,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tutoriel Data</title>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <title>Tutoriel Data Set CSV</title>
 </head>
 
-
-
 <body>
-  test
-  <scritp>
-    console.log('MaConsoolef !);
+  <center>
+    <h1>Tentative de recuparation de donnée CSV !</h1>
+    <img src="" id="rainbow">
+    <p>test 8</p>
+    <canvas id="myChart" width="400" height="140"></canvas>
+    <script>
+      graphIt();
+      async function graphIt() {
+        var data = await recupLesData();
+        //var data = await recupLesData();
+        var ctx = document.getElementById('myChart').getContext('2d');
 
-  </scritp>
+        var myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.X,
+            datasets: [{
+              label: 'Température à travers les ans',
+              data: data.Y,
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              yAxes: [{
+                ticks: {
+                  beginAtZero: true
+                }
+              }]
+            }
+          }
+        });
+      }
+      //----------------------------------------------------
+
+      async function recupLesData() {
+        var X = [];
+        var Y = [];
+        let monFichier = await fetch("fileData.csv");
+        let mesDonees = await monFichier.text();
+        let ligne = [];
+        lignes = mesDonees.split(/\n/g).slice(1);
+        lignes.forEach(ligne => {
+          var colone = ligne.split(",");
+          var annee = colone[0];
+          X.push(annee);
+          var temp = colone[1];
+          Y.push(temp);
+          //console.log(annee, temp);
+        });
+        return {
+          X,
+          Y
+        };
+      }
+      //recupLesDataPres();
+      async function recupLesDataPres() {
+        var X = [19];
+        var Y = [19];
+        var Ypourcent = [];
+        var Xbureau = [];
+        var Diviseur = [19];
+        let monFichier = await fetch("pres-trier.csv");
+        let mesDonees = await monFichier.text();
+        let ligne = [];
+        lignes = mesDonees.split(/\n/g).slice(1);
+        lignes.forEach(ligne => {
+          //votant 15 -16
+          var colone = ligne.split(";");
+          var bureau = colone[7] + "-" + colone[8];
+          Xbureau.push(bureau);
+          var pourcentage = (colone[16] / colone[15]) * 1000;
+          pourcentage = Math.round(pourcentage) / 10;
+          Ypourcent.push(pourcentage);
+          X[colone[8] - 1] = colone[8];
+          Diviseur[colone[8] - 1]++;
+          Y[colone[8] - 1] += (colone[16] / colone[15]);
+          //console.log(bureau, pourcentage);
+        });
+
+      }
+      /*
+            AfficheMonImage();
+            console.log("on test l'image");
+            async function AfficheMonImage() {
+              const response = await fetch("Rainbow.jpg");
+              const Blob = await response.blob();
+              console.log(blob);
+              const Blob2 = blob.URL.createObjectURL(Blob);
+              //objectURL = URL.createObjectURL(object);
+              document.getElementById("rainbow").src = URL.createObjectURL(Blob2);
+            }
+            */
+    </script>
+  </center>
 </body>
+
+
+
+<!-- /* fetch("Rainbow.jpg").then(uneVariable=> {
+  console.log(uneVariable);
+  return uneVariable.blob();
+  })
+  .then(Blob => {
+  console.log(Blob);
+  document.getElementById("rainbow").src = URL.createObjectURL(Blob);
+  })
+  .catch(monErreur => {
+  console.log("Mon erreur 1")
+  console.error(monErreur);
+  });
+  */
+
+  /*
+  AfficheMonImage();
+  async function AfficheMonImage() {
+  const response = await fetch("Rainbow.jpg");
+  const blob = await response.blob;
+  console.log(blob);
+  // const Blob2 = URL.createObjectURL(Blob);
+  // document.getElementById("rainbow").src = URL.createObjectURL(Blob);
+  }
+  */
+  -->
 
 </html>
